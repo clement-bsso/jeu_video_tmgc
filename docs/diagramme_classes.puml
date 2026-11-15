@@ -1,0 +1,349 @@
+@startuml
+' Diagramme de classes du projet Cesichi
+' Pour regénérer l'image : plantuml diagramme_classes.puml (ou coller ce texte sur plantuml.com)
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam monochrome true
+skinparam defaultFontName Arial
+skinparam dpi 110
+hide empty members
+
+title Cesichi - Diagramme de classes
+
+' ---------------------------------------------------------------- Logique
+
+class Besoin {
+  - nom : string
+  - valeur : float
+  - vitesseDegradation : float
+  + Besoin(nom, vitesseDegradation)
+  + mettreAJour(dt : float)
+  + ajouter(quantite : float)
+  + setValeur(nouvelleValeur : float)
+  + getValeur() : float
+  + getNom() : string
+  + estPresqueVide() : bool
+  + estPresquePlein() : bool
+}
+
+class Creature {
+  - nom : string
+  - faim : Besoin
+  - proprete : Besoin
+  - bonheur : Besoin
+  - age : float
+  - stade : Stade
+  - forme : Forme
+  - vivante : bool
+  - causeMort : CauseMort
+  - tempsMoribonde : float
+  + Creature(nom)
+  + mettreAJour(dt : float) : bool
+  + reinitialiser()
+  + nourrir()
+  + nettoyer()
+  + jouer(gainBonheur : float)
+  + getEtats() : vector<Etat>
+  + aEtat(etat : Etat) : bool
+  + getNom() : string
+  + getFaim() : Besoin&
+  + getProprete() : Besoin&
+  + getBonheur() : Besoin&
+  + getAge() : float
+  + setAge(jours : float)
+  + getAgeProchaineEvolution() : float
+  + getStade() : Stade
+  + getForme() : Forme
+  + estVivante() : bool
+  + getCauseMort() : CauseMort
+  - verifierEvolution() : bool
+  - calculerForme() : Forme
+  - verifierMort(dt : float)
+  - compterBesoinsVides() : int
+  - compterBesoinsPleins() : int
+}
+
+class Horloge {
+  - chrono : sf::Clock
+  - dtReel : float
+  - tempsTotal : float
+  - vitesse : float
+  + Horloge()
+  + nouvelleImage()
+  + getDtReel() : float
+  + getDtJeu() : float
+  + getTempsTotal() : float
+  + getVitesse() : float
+  + setVitesse(nouvelleVitesse : float)
+  + accelerer()
+  + ralentir()
+}
+
+enum Stade {
+  BEBE
+  ADO
+  ADULTE
+}
+
+enum Forme {
+  FAVORABLE
+  NEUTRE
+  DEFAVORABLE
+}
+
+enum Etat {
+  MORIBONDE
+  MALADE
+  AFFAMEE
+  SALE
+  TRISTE
+  EN_PLEINE_FORME
+  HEUREUSE
+  REPUE
+  PROPRE
+  NORMALE
+}
+
+enum CauseMort {
+  AUCUNE
+  VIEILLESSE
+  NEGLIGENCE
+}
+
+' ---------------------------------------------------------------- Mini-jeux
+
+abstract class MiniJeu {
+  # police : sf::Font&
+  # termine : bool
+  # resultat : Resultat
+  + MiniJeu(police)
+  + {abstract} demarrer()
+  + {abstract} gererClic(souris)
+  + {abstract} dessiner(fenetre, souris)
+  + estTermine() : bool
+  + getResultat() : Resultat
+  # terminer(resultatFinal : Resultat)
+}
+
+class Chifoumi {
+  - boutons : vector<Bouton>
+  - scoreJoueur : int
+  - scoreCreature : int
+  - choixJoueur : int
+  - choixCreature : int
+  - message : string
+  + Chifoumi(police)
+  + demarrer()
+  + gererClic(souris)
+  + dessiner(fenetre, souris)
+  - jouerManche(choix : int)
+}
+
+class Morpion {
+  - grille : Case[9]
+  - message : string
+  + Morpion(police)
+  + demarrer()
+  + gererClic(souris)
+  + dessiner(fenetre, souris)
+  - aGagne(joueur : Case) : bool
+  - grillePleine() : bool
+  - chercherCoupGagnant(joueur : Case) : int
+  - jouerCreature()
+}
+
+enum Resultat {
+  VICTOIRE
+  EGALITE
+  DEFAITE
+}
+
+enum Case {
+  VIDE
+  JOUEUR
+  CREATURE
+}
+
+' ---------------------------------------------------------------- Affichage
+
+class Bouton {
+  - police : sf::Font&
+  - libelle : string
+  - zone : sf::FloatRect
+  - tailleTexte : unsigned int
+  + Bouton(police, libelle, x, y, largeur, hauteur, tailleTexte)
+  + contient(point) : bool
+  + dessiner(fenetre, souris)
+}
+
+class Decor {
+  - xNuage1 : float
+  - xNuage2 : float
+  + Decor()
+  + mettreAJour(dt : float)
+  + dessiner(fenetre, heure : float)
+  - dessinerNuage(fenetre, x, y)
+  - dessinerArbre(fenetre, x)
+}
+
+class AffichageCreature {
+  - police : sf::Font&
+  - x : float
+  - direction : int
+  - marche : bool
+  - temps : float
+  - tempsReaction : float
+  - texteReaction : string
+  - tempsEvolution : float
+  + AffichageCreature(police)
+  + mettreAJour(dt : float, creature)
+  + dessiner(fenetre, creature)
+  + reagir(texte : string)
+  + lancerAnimationEvolution()
+  + replacerAuCentre()
+  - dessinerDos(fenetre, repere, creature, couleur)
+  - dessinerCorps(fenetre, repere, creature, couleur)
+  - dessinerTete(fenetre, repere, creature, couleur)
+  - dessinerVisage(fenetre, repere, creature)
+  - dessinerBulle(fenetre, creature, hauteur)
+  - choisirCouleur(creature) : sf::Color
+  - choisirTaille(stade : Stade) : float
+  - choisirTexteBulle(creature) : string
+  - ellipse(...)
+  - triangle(...)
+  - trait(...)
+  - demiDisque(...)
+}
+
+class Interface {
+  - police : sf::Font&
+  - boutonNourrir : Bouton
+  - boutonNettoyer : Bouton
+  - boutonJouer : Bouton
+  - message : string
+  - tempsMessage : float
+  + Interface(police)
+  + gererClic(souris) : Action
+  + afficherMessage(texte : string)
+  + effacerMessage()
+  + mettreAJour(dt : float)
+  + dessiner(fenetre, creature, souris)
+  - dessinerInfos(fenetre, creature)
+  - dessinerJauge(fenetre, besoin, y)
+  - dessinerEtats(fenetre, creature)
+  - dessinerMessage(fenetre)
+}
+
+enum Action {
+  AUCUNE
+  NOURRIR
+  NETTOYER
+  JOUER
+}
+
+' ---------------------------------------------------------------- Mode démo
+
+class ModeDemo {
+  - police : sf::Font&
+  - actif : bool
+  - boutons : vector<Bouton>
+  + ModeDemo(police)
+  + basculer(horloge)
+  + desactiver(horloge)
+  + estActif() : bool
+  + gererClic(souris, creature, horloge) : bool
+  + dessiner(fenetre, creature, horloge, souris)
+  - appliquer(numeroBouton : int, creature, horloge)
+}
+
+' ---------------------------------------------------------------- Jeu
+
+class Jeu {
+  - fenetre : sf::RenderWindow
+  - police : sf::Font&
+  - horloge : Horloge
+  - decor : Decor
+  - creature : Creature
+  - affichageCreature : AffichageCreature
+  - interfaceJeu : Interface
+  - modeDemo : ModeDemo
+  - chifoumi : Chifoumi
+  - morpion : Morpion
+  - miniJeuEnCours : MiniJeu*
+  - ecran : Ecran
+  - nomSaisi : string
+  - boutonCommencer, boutonChifoumi, boutonMorpion,\n  boutonAnnuler, boutonRetour, boutonRecommencer : Bouton
+  + Jeu(police)
+  + lancer()
+  - gererEvenements()
+  - mettreAJour()
+  - dessiner()
+  - gererTouche(touche)
+  - gererSaisieNom(caractere)
+  - gererClic(souris)
+  - gererClicPrincipal(souris)
+  - nouvellePartie()
+  - lancerMiniJeu(miniJeu : MiniJeu*)
+  - terminerMiniJeu()
+  - dessinerPanneau(x, y, largeur, hauteur)
+  - dessinerEcranTitre(souris)
+  - dessinerChoixMiniJeu(souris)
+  - dessinerMiniJeu(souris)
+  - dessinerEcranFin(souris)
+}
+
+enum Ecran {
+  TITRE
+  PRINCIPAL
+  CHOIX_MINI_JEU
+  MINI_JEU
+  FIN
+}
+
+' ---------------------------------------------------------------- Relations
+
+' Héritage
+MiniJeu <|-- Chifoumi
+MiniJeu <|-- Morpion
+
+' Composition : l'objet est un attribut de la classe
+Jeu *-- "1" Horloge
+Jeu *-- "1" Decor
+Jeu *-- "1" Creature
+Jeu *-- "1" AffichageCreature
+Jeu *-- "1" Interface
+Jeu *-- "1" ModeDemo
+Jeu *-- "1" Chifoumi
+Jeu *-- "1" Morpion
+Jeu *-- "6" Bouton
+Creature *-- "3" Besoin
+Interface *-- "3" Bouton
+ModeDemo *-- "14" Bouton
+Chifoumi *-- "3" Bouton
+
+' Association : pointeur vers le mini-jeu choisi
+Jeu --> "0..1" MiniJeu : miniJeuEnCours
+
+' Dépendances : la classe utilise l'autre sans la posséder
+AffichageCreature ..> Creature : lit
+Interface ..> Creature : lit
+ModeDemo ..> Creature : modifie
+ModeDemo ..> Horloge : modifie
+
+' Énumérations utilisées
+Creature --> Stade
+Creature --> Forme
+Creature --> CauseMort
+Creature ..> Etat
+MiniJeu --> Resultat
+Morpion --> Case
+Interface ..> Action
+Jeu --> Ecran
+
+note bottom of Jeu
+  Parametres.hpp : toutes les constantes de réglage du jeu.
+  Outils.hpp / Outils.cpp : petites fonctions de dessin
+  (texte, rectangle) utilisées par les classes d'affichage.
+end note
+@enduml
